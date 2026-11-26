@@ -1,0 +1,13 @@
+{
+  "name": "LA Life & Health Study",
+  "short_name": "LA L&H Study",
+  "description": "Offline study app for the Louisiana Life & Health insurance exam.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0b1020",
+  "theme_color": "#0b1020",
+  "icons": [
+    { "src": "assets/icon.png", "sizes": "256x256", "type": "image/png", "purpose": "any" }
+  ]
+}

@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'">
+  <title>LA Life &amp; Health Study</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#0b1020">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="LA L&amp;H Study">
+  <link rel="apple-touch-icon" href="assets/icon.png">
+</head>
+<body>
+  <a class="skip" href="#app">Skip to content</a>
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark" aria-hidden="true">LH</span><span class="brand-text">LA Life &amp; Health</span></div>
+    <form class="search" id="searchForm" role="search">
+      <label class="sr-only" for="searchInput">Search the study material</label>
+      <input id="searchInput" type="search" placeholder="Search lessons, cards, questions" autocomplete="off">
+    </form>
+  </header>
+  <div id="hud"></div>
+  <nav class="nav" aria-label="Main">
+    <a href="#/dashboard" data-nav="dashboard">Dashboard</a>
+    <a href="#/lessons" data-nav="lessons">Lessons</a>
+    <a href="#/flashcards" data-nav="flashcards">Flashcards</a>
+    <a href="#/recall" data-nav="recall">Recall</a>
+    <a href="#/quiz" data-nav="quiz">Quiz</a>
+    <a href="#/session" data-nav="session">Study plan</a>
+    <a href="#/games" data-nav="games">Games</a>
+    <a href="#/scenarios" data-nav="scenarios">Scenarios</a>
+    <a href="#/mock" data-nav="mock">Mock exam</a>
+    <a href="#/achievements" data-nav="achievements">Achievements</a>
+    <a href="#/reference" data-nav="reference">Reference</a>
+    <a href="#/progress" data-nav="progress">Progress</a>
+    <a href="#/help" data-nav="help">Help</a>
+  </nav>
+  <main id="app" tabindex="-1">
+    <noscript><p>This app needs JavaScript.</p></noscript>
+  </main>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <!-- Content (educational data, replaceable): loaded first -->
+  <script src="data/lessons.js"></script>
+  <script src="data/content.js"></script>
+  <script src="data/games.js"></script>
+  <!-- Engine (no screen code) -->
+  <script src="js/core/store.js"></script>
+  <script src="js/core/learning.js"></script>
+  <script src="js/core/content-index.js"></script>
+  <script src="js/core/planner.js"></script>
+  <!-- Interface -->
+  <script src="js/ui/components.js"></script>
+  <script src="js/ui/screens-core.js"></script>
+  <script src="js/ui/screens-study.js"></script>
+  <script src="js/ui/screens-games.js"></script>
+  <!-- Bootstrap -->
+  <script src="js/app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('sw.js').catch(function () { /* offline caching is optional */ });
+      });
+    }
+  </script>
+</body>
+</html>
