@@ -13,6 +13,14 @@
   function fmtTime(sec) { sec = Math.max(0, Math.round(sec)); var m = Math.floor(sec / 60), s = sec % 60; return m + ':' + (s < 10 ? '0' : '') + s; }
   function daysLeft() { return Math.ceil((EXAM.getTime() - Date.now()) / DAY); }
 
+  // Turns a stored source ("Name https://url" or a bare URL) into a readable, clickable source line.
+  function srcLink(source) {
+    var s = String(source || '').trim(); if (!s) return '';
+    var m = s.match(/https?:\/\/\S+/), url = m ? m[0] : '', name = (url ? s.replace(url, '') : s).trim().replace(/[.,;:]+$/, '');
+    if (!name && url) { try { name = new URL(url).hostname.replace(/^www\./, ''); } catch (e) { name = url; } }
+    return '<div class="small muted src-line">Source: ' + (url ? '<a href="' + esc(url) + '" target="_blank" rel="noopener">' + esc(name) + '</a>' : esc(name)) + '</div>';
+  }
+
   function bar(p, cls) { return '<div class="bar ' + (cls || '') + '"><span style="width:' + Math.max(0, Math.min(100, p)) + '%"></span></div>'; }
 
   var toastTimer = null;
@@ -43,7 +51,7 @@
     return '<div class="hud" role="region" aria-label="Your progress">' +
       '<div class="hud-cell level"><span class="hud-badge">Lv ' + li.level + '</span><span class="hud-title">' + esc(li.title) + '</span>' +
         '<div class="xpbar" aria-label="XP ' + store.xp + ' with ' + li.pct + ' percent to next level"><span style="width:' + li.pct + '%"></span></div><span class="hud-sub">' + store.xp + ' XP</span></div>' +
-      '<div class="hud-cell"><span class="hud-stat"><span class="flame" aria-hidden="true">🔥</span> ' + streak + '</span><span class="hud-sub">day streak</span></div>' +
+      '<div class="hud-cell"><span class="hud-stat"><span class="flame" aria-hidden="true"><svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c.6 3.2 2.9 4.9 4.6 7.1C18.3 11.2 19 12.9 19 15a7 7 0 0 1-14 0c0-2.4 1.1-4.2 2.5-5.7.2 1.6 1 2.9 2.2 3.5C9.5 8.4 10.4 5 12 2z"/></svg></span> ' + streak + '</span><span class="hud-sub">day streak</span></div>' +
       '<div class="hud-cell"><span class="hud-stat">' + Math.min(today, goal) + '/' + goal + '</span><span class="hud-sub">daily goal XP</span><div class="xpbar slim"><span style="width:' + pct(Math.min(today, goal), goal) + '%"></span></div></div>' +
       '<div class="hud-cell"><span class="hud-stat">' + (days > 0 ? days : 0) + '</span><span class="hud-sub">days to exam (Dec 22, 2026)</span></div>' +
       '</div>';
@@ -80,7 +88,7 @@
       xpPop(res.xp);
       var fb = container.querySelector('.fb');
       fb.innerHTML = '<div class="feedback ' + (correct ? 'ok' : 'no') + '"><strong>' + (correct ? 'Correct' : 'Not quite') + '.</strong> ' + esc(item.explain) +
-        (correct ? '' : '<div class="muted">Correct answer: ' + LETTERS[order.map(function (c) { return c.orig; }).indexOf(item.answer)] + ' · ' + esc(item.choices[item.answer]) + '</div>') + '</div>';
+        (correct ? '' : '<div class="muted">Correct answer: ' + LETTERS[order.map(function (c) { return c.orig; }).indexOf(item.answer)] + ' · ' + esc(item.choices[item.answer]) + '</div>') + srcLink(item.source) + '</div>';
       renderHud();
       if (onAnswer) onAnswer(correct, res);
     }
@@ -98,6 +106,6 @@
   LAS.ui = LAS.ui || {};
   LAS.ui.components = {
     $: $, esc: esc, shuffle: shuffle, pct: pct, fmtTime: fmtTime, daysLeft: daysLeft, bar: bar,
-    toast: toast, xpPop: xpPop, hud: hud, renderHud: renderHud, mcQuestion: mcQuestion, LETTERS: LETTERS
+    toast: toast, xpPop: xpPop, hud: hud, renderHud: renderHud, mcQuestion: mcQuestion, LETTERS: LETTERS, srcLink: srcLink
   };
 })(window.LAS = window.LAS || {});

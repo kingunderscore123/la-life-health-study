@@ -1,5 +1,5 @@
 // Service worker: caches the whole study app so it works offline after the first visit.
-const CACHE = 'la-lh-study-v2';
+const CACHE = 'la-lh-study-v4';
 const FILES = [
   './',
   './index.html',
@@ -32,18 +32,17 @@ self.addEventListener('activate', (event) => {
   );
 });
 
+// Network first, so content corrections show up right away; the cache is the offline fallback.
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
+  const sameOrigin = new URL(event.request.url).origin === self.location.origin;
   event.respondWith(
-    caches.match(event.request, { ignoreSearch: true }).then((hit) => {
-      if (hit) return hit;
-      return fetch(event.request).then((res) => {
-        if (res.ok && new URL(event.request.url).origin === self.location.origin) {
-          const copy = res.clone();
-          caches.open(CACHE).then((c) => c.put(event.request, copy));
-        }
-        return res;
-      });
-    }).catch(() => caches.match('./index.html'))
+    fetch(event.request).then((res) => {
+      if (res.ok && sameOrigin) {
+        const copy = res.clone();
+        caches.open(CACHE).then((c) => c.put(event.request, copy));
+      }
+      return res;
+    }).catch(() => caches.match(event.request, { ignoreSearch: true }).then((hit) => hit || caches.match('./index.html')))
   );
 });

@@ -58,6 +58,7 @@
       '<span class="face front"><span class="ftext">' + esc(c.front) + '</span><span class="hint">Tap or Space to flip</span></span>' +
       '<span class="face back"><span class="ftext">' + esc(c.back) + '</span>' + (c.memory ? '<span class="memory">Memory trick: ' + esc(c.memory) + '</span>' : '') + '</span></button></div>';
     html += '<p class="center muted small">' + esc(C().unitName[c.unit]) + ' · ' + esc(c.topic) + '</p>';
+    if (fc.flipped && c.source) html += '<div class="center">' + U().srcLink(c.source) + '</div>';
     if (fc.flipped) {
       html += '<div class="rate-row" role="group" aria-label="Rate your recall">' +
         '<button class="btn bad" data-g="1">Again<small>1</small></button><button class="btn" data-g="2">Hard<small>2</small></button><button class="btn good" data-g="3">Good<small>3</small></button><button class="btn primary" data-g="4">Easy<small>4</small></button></div>';
@@ -114,7 +115,7 @@
         '<div class="row"><button class="btn primary" id="rcReveal">Check my answer</button><button class="btn ghost" id="rcBlank">I do not know yet</button></div>';
     } else {
       html += '<div class="your-answer"><span class="chip">Your answer</span><p>' + (rc.typed ? esc(rc.typed) : '<em class="muted">Nothing typed</em>') + '</p></div>';
-      html += '<div class="reveal"><span class="chip good">Model answer</span><p>' + esc(r.a) + '</p></div>';
+      html += '<div class="reveal"><span class="chip good">Model answer</span><p>' + esc(r.a) + '</p>' + U().srcLink(r.source) + '</div>';
       html += '<p class="small muted">Be honest. Did you have the key idea?</p><div class="row"><button class="btn good" id="rcKnew">I had it (K)</button><button class="btn bad" id="rcMiss">I missed it (M)</button></div>';
     }
     html += '</article></section>';
@@ -320,21 +321,29 @@
   }
 
   // ---------- MOCK EXAM ----------
-  var mk = { n: 50, minutes: 60, list: [], i: 0, answers: [], endAt: 0, submitted: false };
+  // 150 questions / 160 minutes matches the PSI Series 103 content outline. The 150-question option uses the
+  // mock exam set, which is weighted to the outline's domain percentages.
+  var mk = { n: 150, minutes: 160, list: [], i: 0, answers: [], endAt: 0, submitted: false };
   function mockSetup() {
     main().innerHTML = '<section class="screen"><div class="screen-head"><div><p class="eyebrow">Exam simulation</p><h1>Timed mock exam</h1></div></div>' +
       '<div class="panel"><p class="muted">No feedback until you finish. The pass mark used here is 70%, the PSI pass mark.</p>' +
-      '<label class="field">Questions<select id="mkN">' + [25, 50, 100].map(function (n) { return '<option value="' + n + '"' + (mk.n === n ? ' selected' : '') + '>' + n + '</option>'; }).join('') + '</select></label>' +
+      '<label class="field">Questions<select id="mkN">' + [150, 100, 50, 25].map(function (n) { return '<option value="' + n + '"' + (mk.n === n ? ' selected' : '') + '>' + (n === 150 ? '150 (full exam, like the real one)' : n) + '</option>'; }).join('') + '</select></label>' +
       '<label class="field">Time limit (minutes)<input id="mkMin" type="number" min="5" max="300" value="' + mk.minutes + '"></label>' +
       '<p class="small muted">Question bank: ' + C().ITEMS.length + ' items. These are practice questions, not official PSI questions.</p>' +
       '<div class="row"><button class="btn primary" id="mkStart">Start mock exam</button></div></div>' +
       (store().mocks.length ? '<h2 class="section-title">Past mocks</h2>' + store().mocks.slice().reverse().map(function (m) { return '<div class="panel mb"><strong>' + esc(m.date) + '</strong> · ' + m.score + '/' + m.total + ' (' + U().pct(m.score, m.total) + '%)</div>'; }).join('') : '') + '</section>';
     document.getElementById('mkStart').addEventListener('click', mockStart);
+    document.getElementById('mkN').addEventListener('change', function () {
+      var n = +this.value, mins = { 150: 160, 100: 107, 50: 53, 25: 27 }[n];
+      if (mins) document.getElementById('mkMin').value = mins;
+    });
   }
   function mockStart() {
     mk.n = +document.getElementById('mkN').value;
     mk.minutes = Math.max(5, +document.getElementById('mkMin').value || 60);
-    mk.list = U().shuffle(C().ITEMS).slice(0, Math.min(mk.n, C().ITEMS.length));
+    var fullSet = C().ITEMS.filter(function (x) { return x.unit === 'mockexam' && x.kind === 'question'; });
+    if (mk.n === 150 && fullSet.length >= 150) mk.list = U().shuffle(fullSet).slice(0, 150);
+    else mk.list = U().shuffle(C().ITEMS).slice(0, Math.min(mk.n, C().ITEMS.length));
     mk.i = 0; mk.answers = []; mk.submitted = false; mk.endAt = Date.now() + mk.minutes * 60000;
     clearTimers(); timers.push(setInterval(mockTick, 1000)); mockDraw();
   }
@@ -379,7 +388,7 @@
     html += '<h2 class="section-title">Missed questions</h2>';
     if (!wrong.length) html += '<p>No misses.</p>';
     wrong.slice(0, 60).forEach(function (w) {
-      html += '<div class="panel mb"><div class="meta"><span class="chip">' + esc(C().unitName[w.it.unit]) + '</span><span class="chip ghost">' + esc(w.it.topic) + '</span></div><p><strong>' + esc(w.it.q) + '</strong></p><p class="small">Your answer: ' + (w.given === undefined ? 'no answer' : U().LETTERS[w.given] + ' ' + esc(w.it.choices[w.given])) + '</p><p class="small">Correct: <strong>' + U().LETTERS[w.it.answer] + ' ' + esc(w.it.choices[w.it.answer]) + '</strong></p><p class="small muted">' + esc(w.it.explain) + '</p></div>';
+      html += '<div class="panel mb"><div class="meta"><span class="chip">' + esc(C().unitName[w.it.unit]) + '</span><span class="chip ghost">' + esc(w.it.topic) + '</span></div><p><strong>' + esc(w.it.q) + '</strong></p><p class="small">Your answer: ' + (w.given === undefined ? 'no answer' : U().LETTERS[w.given] + ' ' + esc(w.it.choices[w.given])) + '</p><p class="small">Correct: <strong>' + U().LETTERS[w.it.answer] + ' ' + esc(w.it.choices[w.it.answer]) + '</strong></p><p class="small muted">' + esc(w.it.explain) + '</p>' + U().srcLink(w.it.source) + '</div>';
     });
     html += '<div class="row mt"><a class="btn primary" href="#/session/15">Build a session from my misses</a><a class="btn" href="#/mock">New mock</a></div></section>';
     main().innerHTML = html;

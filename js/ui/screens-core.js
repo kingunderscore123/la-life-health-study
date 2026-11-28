@@ -42,10 +42,12 @@
         '<div class="stat-line"><span>Questions answered</span><strong>' + Object.keys(st.items).length + '</strong></div>' +
         '<div class="row mt"><a class="btn small" href="#/games">Play a game</a><a class="btn small" href="#/achievements">Achievements</a></div></div>' +
       '</div>';
-    html += '<h2 class="section-title">Chapters</h2><div class="unit-grid">';
+    html += '<h2 class="section-title">Chapters</h2><p class="small muted">Biggest exam domain: Louisiana insurance regulation, 23% of the PSI Series 103 outline. It lives in the <a href="#/lesson/addendum">Addendum</a>.</p><div class="unit-grid">';
     C().UNIT_ORDER.forEach(function (u) {
+      var lesson = C().lessons.filter(function (l) { return l.id === u; })[0];
+      if (!lesson) return; // exam-only sets (mock, practice) are not chapters
       var p = unitProgress(u);
-      var label = (C().lessons.filter(function (l) { return l.id === u; })[0] || {}).label || u;
+      var label = lesson.title || lesson.label || u;
       var overall = Math.round(0.4 * p.readPct + 0.3 * pct(p.mastered, p.cards) + 0.3 * p.mastery);
       html += '<a class="unit-card" href="#/lesson/' + esc(u) + '"><div class="row"><strong>' + esc(label) + '</strong><span class="spacer"></span><span class="chip ' + (overall >= 70 ? 'good' : '') + '">' + overall + '%</span></div>' +
         U().bar(overall, 'slim') + '<p class="small muted">Read ' + p.read + '/' + p.total + ' · Cards ' + p.mastered + '/' + p.cards + ' · Mastery ' + p.mastery + '%</p></a>';

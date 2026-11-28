@@ -16,10 +16,12 @@
   var unitName = {};
   lessons.forEach(function (l) { unitName[l.id] = l.short; });
   unitName.addendum = unitName.addendum || 'Addendum';
+  unitName.mockexam = unitName.mockexam || 'Mock exam';
+  unitName.practiceexam = unitName.practiceexam || 'Practice exam';
 
   function unitTitle(u) {
     var l = lessons.filter(function (x) { return x.id === u; })[0];
-    return l ? l.label : (quiz[u] && quiz[u].title) || u;
+    return l ? l.label : ({ mockexam: 'Mock exam (150, outline-weighted)', practiceexam: 'Practice exam (40)' })[u] || (quiz[u] && quiz[u].title) || u;
   }
 
   function validQ(q) {
@@ -33,15 +35,15 @@
     var c = quiz[u]; if (!c) return;
     (c.questions || []).forEach(function (q, i) { if (validQ(q)) ITEMS.push(mkItem(u, 'q', i, q, 'question')); });
     (c.scenarios || []).forEach(function (q, i) { if (validQ(q)) ITEMS.push(mkItem(u, 's', i, q, 'scenario')); });
-    (c.flashcards || []).forEach(function (f, i) { if (f && f.front && f.back) CARDS.push({ id: u + ':c' + i, unit: u, front: f.front, back: f.back, topic: f.topic || 'General', memory: f.memory || '' }); });
+    (c.flashcards || []).forEach(function (f, i) { if (f && f.front && f.back) CARDS.push({ id: u + ':c' + i, unit: u, front: f.front, back: f.back, topic: f.topic || 'General', memory: f.memory || '', source: f.source || '' }); });
     (c.pairs || []).forEach(function (p) { if (p && p.term && p.match) PAIRS.push({ unit: u, term: p.term, match: p.match }); });
   });
   function mkItem(u, t, i, q, kind) {
-    return { id: u + ':' + t + i, unit: u, topic: q.topic || 'General', kind: kind, situation: q.situation || '', q: q.q, choices: q.choices, answer: q.answer, explain: q.explain || '' };
+    return { id: u + ':' + t + i, unit: u, topic: q.topic || 'General', kind: kind, situation: q.situation || '', q: q.q, choices: q.choices, answer: q.answer, explain: q.explain || '', source: q.source || '' };
   }
 
   // Recall prompts from the guides' "Check yourself" sections (typed answer first, then reveal).
-  var RECALL = recallRaw.map(function (r, i) { return { id: 'r' + i, unit: r.unit, unitTitle: r.unitTitle, q: r.q, a: r.a }; });
+  var RECALL = recallRaw.map(function (r, i) { return { id: 'r' + i, unit: r.unit, unitTitle: r.unitTitle, q: r.q, a: r.a, source: r.src || '' }; });
 
   // True/false statements generated from multiple-choice items (correct choice = true, a distractor = false).
   // Items whose question asks what is NOT correct are skipped.
